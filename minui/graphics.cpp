@@ -328,13 +328,13 @@ unsigned int gr_get_height(GRSurface* surface) {
   return surface->height;
 }
 
-int gr_init_font(const char* name, GRFont** dest) {
+int gr_init_font(const std::string &res_path, GRFont** dest) {
   GRFont* font = static_cast<GRFont*>(calloc(1, sizeof(*gr_font)));
   if (font == nullptr) {
     return -1;
   }
 
-  int res = res_create_alpha_surface(name, &(font->texture));
+  int res = res_create_alpha_surface(res_path, &(font->texture));
   if (res < 0) {
     free(font);
     return res;
@@ -352,13 +352,14 @@ int gr_init_font(const char* name, GRFont** dest) {
 }
 
 static void gr_init_font(void) {
-  int res = gr_init_font("font", &gr_font);
+  std::string res_path("/sdcard/cosmo-customos-installer/18x32.png");
+  int res = gr_init_font(res_path, &gr_font);
+  if (res != 0) {
+    res_path = std::string("/res/images/font.png");
+    res = gr_init_font(res_path, &gr_font);
+  }
   if (res == 0) {
-    res = gr_init_font("font_menu", &gr_font_menu);
-    if (res != 0) {
-      printf("failed to read menu font\n");
-      gr_font_menu = gr_font;
-    }
+    gr_font_menu = gr_font;
     return;
   }
 
@@ -390,7 +391,7 @@ void gr_flip() {
   gr_draw = gr_backend->Flip();
 }
 
-int gr_init() {
+int gr_init(GRRotation rot) {
   gr_init_font();
 
   auto backend = std::unique_ptr<MinuiBackend>{ std::make_unique<MinuiBackendAdf>() };
@@ -418,7 +419,7 @@ int gr_init() {
   gr_flip();
   gr_flip();
 
-  gr_rotate(DEFAULT_ROTATION);
+  gr_rotate(rot);
 
   if (gr_draw->pixel_bytes != 4) {
     printf("gr_init: Only 4-byte pixel formats supported\n");

@@ -572,28 +572,31 @@ void ScreenRecoveryUI::draw_header_locked(int& y) {
   GRSurface* icon;
   int icon_x, icon_y, icon_h, icon_w;
 
-  y += v_unit / 2;  // Margin
-
   // Draw back icon if not in main menu
   if (!menu_is_main_) {
     icon = (menu_sel == -1 ? ic_back_sel : ic_back);
-    icon_w = gr_get_width(icon);
-    icon_h = gr_get_height(icon);
-    icon_x = kMarginWidth + (h_unit / 2) + ((h_unit * 1) - icon_w) / 2;
-    icon_y = y + ((v_unit * 1) - icon_h) / 2;
-    gr_blit(icon, 0, 0, icon_w, icon_h, icon_x, icon_y);
+    if (icon != nullptr) {
+      icon_w = gr_get_width(icon);
+      icon_h = gr_get_height(icon);
+      icon_x = kMarginWidth + (h_unit / 2) + ((h_unit * 1) - icon_w) / 2;
+      y += v_unit / 2;  // Margin
+      icon_y = y + ((v_unit * 1) - icon_h) / 2;
+      gr_blit(icon, 0, 0, icon_w, icon_h, icon_x, icon_y);
+      y += v_unit; // Margin
+    }
   }
-  y += v_unit;
 
   // Draw logo
   icon = logo_image;
-  icon_w = gr_get_width(icon);
-  icon_h = gr_get_height(icon);
-  icon_x = kMarginWidth + (gr_fb_width() - icon_w) / 2;
-  icon_y = y + ((v_unit * 4) - icon_h) / 2;
-  gr_blit(icon, 0, 0, icon_w, icon_h, icon_x, icon_y);
-  y += v_unit * 4;
-
+  if (icon != nullptr) {
+    icon_w = gr_get_width(icon);
+    icon_h = gr_get_height(icon);
+    icon_x = kMarginWidth + (gr_fb_width() - icon_w) / 2;
+    y += v_unit / 2;  // Margin
+    icon_y = y + ((v_unit * 4) - icon_h) / 2;
+    gr_blit(icon, 0, 0, icon_w, icon_h, icon_x, icon_y);
+    y += v_unit * 4;
+  }
   y += v_unit * 1;  // Margin
 }
 
@@ -622,15 +625,11 @@ void ScreenRecoveryUI::draw_text_menu_locked(int& y) {
     const ScreenMenuItem& item = menu_items_.at(i);
     if (i == menu_sel) {
       SetColor(MENU_SEL_FG);
-      y += menu_char_height_;
       gr_text(gr_menu_font(), x, y, item.text().c_str(), false);
-      y += menu_char_height_;
       y += menu_char_height_;
     } else {
       SetColor(MENU);
-      y += menu_char_height_;
       gr_text(gr_menu_font(), x, y, item.text().c_str(), false);
-      y += menu_char_height_;
       y += menu_char_height_;
     }
   }
@@ -900,7 +899,7 @@ void ScreenRecoveryUI::SetSystemUpdateText(bool security_update) {
 }
 
 bool ScreenRecoveryUI::InitTextParams() {
-  if (gr_init() < 0) {
+  if (gr_init(ROTATION_LEFT) < 0) {
     return false;
   }
 

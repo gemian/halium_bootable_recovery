@@ -49,7 +49,7 @@ enum GRRotation {
   ROTATION_LEFT = 3,
 };
 
-int gr_init();
+int gr_init(GRRotation rotation);
 void gr_exit();
 
 int gr_fb_width();
@@ -132,7 +132,7 @@ int res_create_multi_display_surface(const char* name, int* frames, int* fps,
                                      GRSurface*** pSurface);
 
 // Load a single alpha surface from a grayscale PNG image.
-int res_create_alpha_surface(const char* name, GRSurface** pSurface);
+int res_create_alpha_surface(const std::string &res_path, GRSurface** pSurface);
 
 // Load part of a grayscale PNG image that is the first match for the
 // given locale.  The image is expected to be a composite of multiple

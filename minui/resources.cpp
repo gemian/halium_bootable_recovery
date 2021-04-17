@@ -97,8 +97,7 @@ class PngHandler {
   std::unique_ptr<FILE, decltype(&fclose)> png_fp_;
 };
 
-PngHandler::PngHandler(const std::string& name) : error_code_(0), png_fp_(nullptr, fclose) {
-  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name.c_str());
+PngHandler::PngHandler(const std::string& res_path) : error_code_(0), png_fp_(nullptr, fclose) {
   png_fp_.reset(fopen(res_path.c_str(), "rbe"));
   if (!png_fp_) {
     error_code_ = -1;
@@ -238,8 +237,8 @@ static void transform_rgb_to_draw(unsigned char* input_row,
 
 int res_create_display_surface(const char* name, GRSurface** pSurface) {
   *pSurface = nullptr;
-
-  PngHandler png_handler(name);
+  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
+  PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
   png_structp png_ptr = png_handler.png_ptr();
@@ -271,8 +270,8 @@ int res_create_multi_display_surface(const char* name, int* frames, int* fps,
                                      GRSurface*** pSurface) {
   *pSurface = nullptr;
   *frames = -1;
-
-  PngHandler png_handler(name);
+  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
+  PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
   png_structp png_ptr = png_handler.png_ptr();
@@ -348,10 +347,9 @@ exit:
   return result;
 }
 
-int res_create_alpha_surface(const char* name, GRSurface** pSurface) {
+int res_create_alpha_surface(const std::string &res_path, GRSurface** pSurface) {
   *pSurface = nullptr;
-
-  PngHandler png_handler(name);
+  PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
   if (png_handler.channels() != 1) {
@@ -410,7 +408,8 @@ bool matches_locale(const std::string& prefix, const std::string& locale) {
 }
 
 std::vector<std::string> get_locales_in_png(const std::string& png_name) {
-  PngHandler png_handler(png_name);
+  std::string res_path = android::base::StringPrintf("/res/images/%s.png", png_name.c_str());
+  PngHandler png_handler(res_path);
   if (!png_handler) {
     printf("Failed to open %s, error: %d\n", png_name.c_str(), png_handler.error_code());
     return {};
@@ -444,8 +443,8 @@ int res_create_localized_alpha_surface(const char* name,
   if (locale == nullptr) {
     return 0;
   }
-
-  PngHandler png_handler(name);
+  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
+  PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
   if (png_handler.channels() != 1) {

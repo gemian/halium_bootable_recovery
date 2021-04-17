@@ -68,6 +68,220 @@ LOCAL_STATIC_LIBRARIES := \
 
 include $(BUILD_STATIC_LIBRARY)
 
+# gemian-setup (static executable)
+# ===============================
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+    adb_install.cpp \
+    device.cpp \
+    fuse_sdcard_provider.cpp \
+    para_variables.cpp \
+    gemian_setup.cpp \
+    roots.cpp \
+    rotate_logs.cpp \
+    screen_ui.cpp \
+    ui.cpp \
+    volclient.cpp \
+    vr_ui.cpp \
+    wear_ui.cpp \
+    ubupdater.cpp \
+    default_device.cpp
+
+LOCAL_MODULE := gemian-setup
+
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+
+LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
+LOCAL_CFLAGS += -Wall -Werror
+
+ifneq ($(TARGET_RECOVERY_UI_MARGIN_HEIGHT),)
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_HEIGHT=$(TARGET_RECOVERY_UI_MARGIN_HEIGHT)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_HEIGHT=0
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_MARGIN_WIDTH),)
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_WIDTH=$(TARGET_RECOVERY_UI_MARGIN_WIDTH)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_WIDTH=0
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_MARGIN_STATUSBAR),)
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_STATUSBAR=$(TARGET_RECOVERY_UI_MARGIN_STATUSBAR)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_MARGIN_STATUSBAR=0
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_TOUCH_LOW_THRESHOLD),)
+LOCAL_CFLAGS += -DRECOVERY_UI_TOUCH_LOW_THRESHOLD=$(TARGET_RECOVERY_UI_TOUCH_LOW_THRESHOLD)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_TOUCH_LOW_THRESHOLD=50
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_TOUCH_HIGH_THRESHOLD),)
+LOCAL_CFLAGS += -DRECOVERY_UI_TOUCH_HIGH_THRESHOLD=$(TARGET_RECOVERY_UI_TOUCH_HIGH_THRESHOLD)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_TOUCH_HIGH_THRESHOLD=90
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_PROGRESS_BAR_BASELINE),)
+LOCAL_CFLAGS += -DRECOVERY_UI_PROGRESS_BAR_BASELINE=$(TARGET_RECOVERY_UI_PROGRESS_BAR_BASELINE)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_PROGRESS_BAR_BASELINE=259
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_ANIMATION_FPS),)
+LOCAL_CFLAGS += -DRECOVERY_UI_ANIMATION_FPS=$(TARGET_RECOVERY_UI_ANIMATION_FPS)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_ANIMATION_FPS=30
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_MENU_UNUSABLE_ROWS),)
+LOCAL_CFLAGS += -DRECOVERY_UI_MENU_UNUSABLE_ROWS=$(TARGET_RECOVERY_UI_MENU_UNUSABLE_ROWS)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_MENU_UNUSABLE_ROWS=9
+endif
+
+ifneq ($(TARGET_RECOVERY_UI_VR_STEREO_OFFSET),)
+LOCAL_CFLAGS += -DRECOVERY_UI_VR_STEREO_OFFSET=$(TARGET_RECOVERY_UI_VR_STEREO_OFFSET)
+else
+LOCAL_CFLAGS += -DRECOVERY_UI_VR_STEREO_OFFSET=0
+endif
+
+ifeq ($(TARGET_RECOVERY_UI_BLANK_UNBLANK_ON_INIT),true)
+LOCAL_CFLAGS += -DRECOVERY_UI_BLANK_UNBLANK_ON_INIT
+endif
+
+ifneq ($(TARGET_RECOVERY_BACKLIGHT_PATH),)
+LOCAL_CFLAGS += -DBACKLIGHT_PATH=\"$(TARGET_RECOVERY_BACKLIGHT_PATH)\"
+else
+LOCAL_CFLAGS += -DBACKLIGHT_PATH=\"/sys/class/leds/lcd-backlight\"
+endif
+
+LOCAL_C_INCLUDES += \
+    system/vold \
+    external/e2fsprogs/lib
+# Health HAL dependency
+LOCAL_STATIC_LIBRARIES := \
+    android.hardware.health@2.0-impl \
+    android.hardware.health@2.0 \
+    android.hardware.health@1.0 \
+    android.hardware.health@1.0-convert \
+    libhealthstoragedefault \
+    libhidltransport \
+    libhidlbase \
+    libhwbinder_noltopgo \
+    libvndksupport \
+    libbatterymonitor
+
+LOCAL_STATIC_LIBRARIES += \
+    libmksh_driver \
+    librecovery \
+    libverifier \
+    libbootloader_message \
+    libfs_mgr \
+    libext4_utils \
+    libext2_blkid \
+    libext2_uuid \
+    libsparse \
+    libreboot \
+    libziparchive \
+    libvolume_manager \
+    libminipigz_static \
+    libzopfli_static \
+    libminizip_static \
+    libminiunz_static \
+    libotautil \
+    libmounts \
+    libminadbd \
+    libasyncio \
+    libfusesideload \
+    libminui \
+    libpng \
+    libcrypto_utils \
+    libcrypto \
+    libvintf_recovery \
+    libvintf \
+    libhidl-gen-utils \
+    libtinyxml2 \
+    libbase \
+    libutils \
+    libcutils \
+    liblog \
+    libselinux \
+    libz \
+    libcrecovery
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libawk_main
+
+# Libraries for FS tools
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libext2fs \
+    libe2fsck \
+    libmke2fs \
+    libresize2fs \
+    libtune2fs \
+    libsparse
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libe2fsdroid
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libf2fs \
+    libf2fs_fsck \
+    libf2fs_mkfs
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libfsck_msdos
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libexfat \
+    libexfat_mkfs \
+    libexfat_fsck
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libfuse-lite \
+    libntfs-3g \
+    libntfs_utils \
+    libntfs_fsck \
+    libntfs_mkfs \
+    libntfs_mount
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libsgdisk_static
+
+LOCAL_STATIC_LIBRARIES += \
+    libext2_blkid \
+    libext2_uuid \
+    libext2_profile \
+    libext2_quota \
+    libext2_com_err \
+    libext2_e2p \
+    libc++_static \
+    libz
+
+FILESYSTEM_TOOLS := \
+    e2fsdroid e2fsdroid_static \
+    e2fsck mke2fs mke2fs_static fsck.ext4 mkfs.ext4 \
+    resize2fs tune2fs \
+    mkfs.f2fs fsck.f2fs sload.f2fs \
+    fsck_msdos \
+    fsck.exfat mkfs.exfat \
+    fsck.ntfs mkfs.ntfs mount.ntfs \
+    sgdisk
+
+LOCAL_HAL_STATIC_LIBRARIES := libhealthd
+LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+
+ifneq ($(TARGET_RECOVERY_DEVICE_MODULES),)
+    LOCAL_REQUIRED_MODULES += $(TARGET_RECOVERY_DEVICE_MODULES)
+endif
+
+include $(BUILD_EXECUTABLE)
+
+
 # recovery (static executable)
 # ===============================
 include $(CLEAR_VARS)
