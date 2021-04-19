@@ -9,84 +9,91 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include "ParaVariables.h"
+#include "para_variables.h"
 
 TEST_CASE("Read JP as Block", "[keyboard_selection]")
 {
     std::string filename = "para-jp.img";
-    std::ifstream basicIfstream(filename, std::ios::binary);
-    REQUIRE(basicIfstream.is_open());
+    std::ifstream paraStream(filename, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
     ParaVariables paraVariables;
     paraVariables.Clear();
-    ParaVarErrors err = paraVariables.ReadFromStream(basicIfstream);
+    ParaVarErrors err = paraVariables.ReadFromStream(paraStream);
     CHECK(err == ParaVarErrorNone);
     std::string &kbLayout = paraVariables["keyboard_layout"];
     CHECK(kbLayout.compare("jp") == 0);
+    paraStream.close();
 }
 
 TEST_CASE("Read GB as Block", "[keyboard_selection]")
 {
     std::string filename = "para-gb.img";
-    std::ifstream basicIfstream(filename, std::ios::binary);
-    REQUIRE(basicIfstream.is_open());
+    std::ifstream paraStream(filename, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
     ParaVariables paraVariables;
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream) == ParaVarErrorNone);
+    REQUIRE(paraVariables.ReadFromStream(paraStream) == ParaVarErrorNone);
     REQUIRE(paraVariables["keyboard_layout"].compare("gb") == 0);
+    paraStream.close();
 }
 
 TEST_CASE("Read Dvorak as Block", "[keyboard_selection]")
 {
     std::string filename = "para-dvorak.img";
-    std::ifstream basicIfstream(filename, std::ios::binary);
-    REQUIRE(basicIfstream.is_open());
+    std::ifstream paraStream(filename, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
     ParaVariables paraVariables;
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream) == ParaVarErrorNone);
+    REQUIRE(paraVariables.ReadFromStream(paraStream) == ParaVarErrorNone);
     REQUIRE(paraVariables["keyboard_layout"].compare("dvorak") == 0);
+    paraStream.close();
 }
 
 TEST_CASE("Read null as bad block", "[keyboard_selection]")
 {
     std::string filename = "/dev/null";
-    std::ifstream basicIfstream(filename, std::ios::binary);
-    REQUIRE(basicIfstream.is_open());
+    std::ifstream paraStream(filename, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
     ParaVariables paraVariables;
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream) == ParaVarErrorReadBlock);
+    REQUIRE(paraVariables.ReadFromStream(paraStream) == ParaVarErrorReadBlock);
     REQUIRE(paraVariables["keyboard_layout"].compare("gb") != 0);
+    paraStream.close();
 }
 
 TEST_CASE("Read no sig", "[keyboard_selection]")
 {
     std::string filename1 = "para-nosig1.img";
-    std::ifstream basicIfstream1(filename1, std::ios::binary);
-    REQUIRE(basicIfstream1.is_open());
+    std::ifstream paraStream1(filename1, std::ios::binary);
+    REQUIRE(paraStream1.is_open());
 
     ParaVariables paraVariables;
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream1) == ParaVarErrorBadSig);
+    REQUIRE(paraVariables.ReadFromStream(paraStream1) == ParaVarErrorBadSig);
     REQUIRE(paraVariables["keyboard_layout"].compare("gb") != 0);
+    paraStream1.close();
 
     std::string filename2 = "para-nosig2.img";
-    std::ifstream basicIfstream2(filename2, std::ios::binary);
-    REQUIRE(basicIfstream2.is_open());
+    std::ifstream paraStream2(filename2, std::ios::binary);
+    REQUIRE(paraStream2.is_open());
 
     paraVariables.Clear();
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream2) == ParaVarErrorBadSig);
+    REQUIRE(paraVariables.ReadFromStream(paraStream2) == ParaVarErrorBadSig);
     REQUIRE(paraVariables["keyboard_layout"].compare("gb") != 0);
+    paraStream2.close();
 }
 
 TEST_CASE("Read bad checksum", "[keyboard_selection]")
 {
     std::string filename = "para-broken.img";
-    std::ifstream basicIfstream(filename, std::ios::binary);
-    REQUIRE(basicIfstream.is_open());
+    std::ifstream paraStream(filename, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
     ParaVariables paraVariables;
-    REQUIRE(paraVariables.ReadFromStream(basicIfstream) == ParaVarErrorBadCheckSum);
+    REQUIRE(paraVariables.ReadFromStream(paraStream) == ParaVarErrorBadCheckSum);
     std::string &string = paraVariables["keyboard_layout"];
     REQUIRE(string.compare("gb") != 0);
+    paraStream.close();
 }
 
 TEST_CASE("Write GB", "[keyboard_selection]")
@@ -97,11 +104,11 @@ TEST_CASE("Write GB", "[keyboard_selection]")
     REQUIRE(paraVariables["keyboard_layout"].compare("gb") == 0);
 
     std::string filenameOut = "para-gb-out.img";
-    std::ofstream basicOfstream(filenameOut, std::ios::binary);
-    REQUIRE(basicOfstream.is_open());
+    std::ofstream paraStream(filenameOut, std::ios::binary);
+    REQUIRE(paraStream.is_open());
 
-    paraVariables.WriteToStream(basicOfstream);
-    basicOfstream.close();
+    paraVariables.WriteToStream(paraStream);
+    paraStream.close();
 
     std::string filename = "para-gb.img";
     std::ifstream knownGood(filename, std::ios::binary);

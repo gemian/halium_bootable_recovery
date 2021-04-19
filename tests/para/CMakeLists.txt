@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 
-add_definitions(-DMOCK_PARTITION)
-
 project(tests)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -19,7 +17,9 @@ file(COPY para-broken.img DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(tests
         test_keyboard_selection.cpp
+        test_gemian_install_config.cpp
         ../../para_variables.cpp
+        ../../gemian_install_config.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 

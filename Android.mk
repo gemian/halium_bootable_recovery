@@ -68,7 +68,7 @@ LOCAL_STATIC_LIBRARIES := \
 
 include $(BUILD_STATIC_LIBRARY)
 
-# gemian-setup (static executable)
+# gemian-install-config (static executable)
 # ===============================
 include $(CLEAR_VARS)
 
@@ -78,6 +78,7 @@ LOCAL_SRC_FILES := \
     fuse_sdcard_provider.cpp \
     para_variables.cpp \
     gemian_setup.cpp \
+    gemian_install_config.cpp \
     roots.cpp \
     rotate_logs.cpp \
     screen_ui.cpp \
@@ -88,7 +89,7 @@ LOCAL_SRC_FILES := \
     ubupdater.cpp \
     default_device.cpp
 
-LOCAL_MODULE := gemian-setup
+LOCAL_MODULE := gemian-install-config
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 

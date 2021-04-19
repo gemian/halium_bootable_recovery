@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021, Adam Boardman
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -58,6 +64,7 @@
 #include "screen_ui.h"
 #include "stub_ui.h"
 #include "para_variables.h"
+#include "gemian_install_config.h"
 #include "ui.h"
 
 static constexpr const char* DEFAULT_LOCALE = "en-US";
@@ -66,6 +73,9 @@ struct selabel_handle* sehandle;
 
 ParaVariables paraVariables;
 RecoveryUI *ui;
+extern const char* keyboard_layout_codes[];
+extern const char* keyboard_layout_items[];
+extern const char** time_zone_items[];
 
 /*
  * The recovery tool communicates with the main system through /cache files.
@@ -314,89 +324,87 @@ int get_menu_selection(bool menu_is_main, menu_type_t menu_type, const char* con
 }
 
 static void keyboard_layout(Device *device) {
-    std::string at_load(paraVariables["keyboard_layout"]);
-    ui->Print("Keyboard layout: %s\n", at_load.c_str());
+    ui->Print("Keyboard layout: %s\n", paraVariables["keyboard_layout"].c_str());
 
     const char* headers[] = { "Select internal hardware keyboard layout", nullptr };
-    const char* codes[] = { "ara",
-                            "at",
-                            "be",
-                            "cat",
-                            "hr",
-                            "cz",
-                            "dk",
-                            "gb",
-                            "us",
-                            "ie",
-                            "dvorak-us",
-                            "fr",
-                            "fi",
-                            "de",
-                            "gr",
-                            "hu",
-                            "it",
-                            "jp",
-                            "no",
-                            "pl",
-                            "pt",
-                            "ru",
-                            "sk",
-                            "es",
-                            "se",
-                            "ch-de",
-                            nullptr
-    };
-    const MenuItemVector items = {
-            MenuItem("Arabic"),
-            MenuItem("Austrian"),
-            MenuItem("Belgian"),
-            MenuItem("Catalan"),
-            MenuItem("Croatian"),
-            MenuItem("Czech"),
-            MenuItem("Danish"),
-            MenuItem("English (UK)"),
-            MenuItem("English (US)"),
-            MenuItem("English (Eire)"),
-            MenuItem("English (Dvorak-US)"),
-            MenuItem("French"),
-            MenuItem("Finnish"),
-            MenuItem("German"),
-            MenuItem("Greek"),
-            MenuItem("Hungarian"),
-            MenuItem("Italian"),
-            MenuItem("Japanese (Kana)"),
-            MenuItem("Norwegian"),
-            MenuItem("Polish"),
-            MenuItem("Portuguese"),
-            MenuItem("Russian"),
-            MenuItem("Slovak"),
-            MenuItem("Spanish"),
-            MenuItem("Swedish"),
-            MenuItem("Swiss German"),
-    };
 
-    int current_index = 0;
-    bool found = false;
-    for (int i=0; !at_load.empty() && codes[i] != nullptr; i++) {
-        if (at_load.compare(codes[i]) == 0) {
-            current_index = i;
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        current_index = 8; //us
+    int current_index = index_for_keyboard_layout(paraVariables["keyboard_layout"]);
+
+    MenuItemVector items;
+    for (int i=0; keyboard_layout_items[i] != nullptr; i++) {
+      items.push_back(MenuItem(keyboard_layout_items[i]));
     }
 
     int chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, current_index, device);
     if (chosen_item > 0) {
-        paraVariables["keyboard_layout"] = codes[chosen_item];
-        ui->Print("Keyboard layout saved: %s\n", codes[chosen_item]);
+        paraVariables["keyboard_layout"] = keyboard_layout_codes[chosen_item];
+        ui->Print("Keyboard layout saved: %s\n", keyboard_layout_codes[chosen_item]);
     }
 }
 
+static void time_zone_city_region(Device *device, int area_index) {
+  const char* headers[] = { "Select city or region", nullptr };
+
+  int current_area_index = index_for_tz_area(paraVariables["time_zone"]);
+  int current_index = (area_index == current_area_index) ? index_for_tz_city_region(paraVariables["time_zone"]) : 0;
+  MenuItemVector items;
+  items.push_back(MenuItem("Back"));
+  for (int i=1; time_zone_items[area_index][i] != nullptr; i++) {
+    items.push_back(MenuItem(time_zone_items[area_index][i]));
+  }
+
+  int chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, current_index, device);
+  if (chosen_item > 0) {
+    paraVariables["time_zone"] = std::string(time_zone_items[area_index][0]) + "/" + time_zone_items[area_index][chosen_item];
+    ui->Print("TimeZone selected: %s\n", paraVariables["time_zone"].c_str());
+  }
+}
+
+static void time_zone(Device *device) {
+  ui->Print("TimeZone: %s\n", paraVariables["time_zone"].c_str());
+
+  const char* headers[] = { "Select geographic area", nullptr };
+
+  int current_index = index_for_tz_area(paraVariables["time_zone"]);
+  MenuItemVector items;
+  for (int i=0; i <= time_zone_areas_count; i++) {
+    items.push_back(MenuItem(time_zone_items[i][0]));
+  }
+
+  int chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, current_index, device);
+  if (chosen_item > 0) {
+    time_zone_city_region(device,chosen_item);
+  }
+}
+
+static void setup_menu(Device* device) {
+  const char* headers[] = { "Gemian Setup", nullptr };
+  int chosen_item;
+  do {
+    auto keyboardMenu = std::string(" Set Keyboard: ") + name_for_keyboard_layout(paraVariables["keyboard_layout"]);
+    auto timeZoneMenu = " Set Timezone: " + paraVariables["time_zone"];
+    const MenuItemVector items = {
+      MenuItem(keyboardMenu),
+      MenuItem(timeZoneMenu),
+      MenuItem(" Continue")
+    };
+    chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, 0, device);
+
+    switch (chosen_item) {
+      case 0:
+        keyboard_layout(device);
+        break;
+      case 1:
+        time_zone(device);
+        break;
+    }
+
+  } while (chosen_item < 2);
+
+}
+
 int main() {
-  redirect_stdio("/tmp/gemian-setup.log");
+  redirect_stdio("/tmp/gemian-install-config.log");
 
   Device* device = make_device();
   if (device == nullptr) {
@@ -433,14 +441,23 @@ int main() {
   }
   basicIfstream.close();
 
-  std::string at_load(paraVariables["keyboard_layout"]);
+  if (paraVariables["keyboard_layout"].length() == 0) {
+    paraVariables["keyboard_layout"] = "us";
+  }
+  if (paraVariables["time_zone"].length() == 0) {
+    paraVariables["time_zone"] = "Etc/UTC";
+  }
+  std::string keyboardAtLoad(paraVariables["keyboard_layout"]);
+  std::string timeZoneAtLoad(paraVariables["time_zone"]);
 
   ui->SetProgressType(RecoveryUI::EMPTY);
 
   ui->ShowText(true);
-  keyboard_layout(device);
 
-  if (at_load.compare(paraVariables["keyboard_layout"]) != 0) {
+  setup_menu(device);
+
+  if ((keyboardAtLoad.compare(paraVariables["keyboard_layout"]) != 0)
+      || (timeZoneAtLoad.compare(paraVariables["time_zone"]) != 0)) {
     ui->Print("Layout selected\n");
     std::ofstream basicOfstream(filename, std::ios::binary);
     if (basicOfstream.is_open()) {
