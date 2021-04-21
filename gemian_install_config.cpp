@@ -6,8 +6,6 @@
 
 #include "gemian_install_config.h"
 
-#include "para_variables.h"
-
 const char* keyboard_layout_codes[] = { "",   "ara", "at", "be", "cat",       "hr",    "cz",
                                         "dk", "gb",  "us", "ie", "dvorak-us", "fr",    "fi",
                                         "de", "gr",  "hu", "it", "jp",        "no",    "pl",
