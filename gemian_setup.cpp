@@ -379,7 +379,7 @@ static void time_zone(Device *device) {
 
 static void setup_menu(Device* device) {
   const char* headers[] = { "Gemian Setup", nullptr };
-  int chosen_item;
+  int chosen_item = 0;
   do {
     auto keyboardMenu = std::string(" Set Keyboard: ") + name_for_keyboard_layout(paraVariables["keyboard_layout"]);
     auto timeZoneMenu = " Set Timezone: " + paraVariables["time_zone"];
@@ -388,7 +388,7 @@ static void setup_menu(Device* device) {
       MenuItem(timeZoneMenu),
       MenuItem(" Continue")
     };
-    chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, 0, device);
+    chosen_item = get_menu_selection(false, MT_LIST, headers, items, true, chosen_item, device);
 
     switch (chosen_item) {
       case 0:
