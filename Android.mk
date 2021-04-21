@@ -68,6 +68,57 @@ LOCAL_STATIC_LIBRARIES := \
 
 include $(BUILD_STATIC_LIBRARY)
 
+# yamui (static executable)
+# ===============================
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+    yamui.cpp
+
+LOCAL_MODULE := yamui
+
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+
+LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
+LOCAL_CFLAGS += -Wall -Werror
+
+LOCAL_C_INCLUDES += \
+    system/vold \
+    external/e2fsprogs/lib
+
+# Health HAL dependency
+LOCAL_STATIC_LIBRARIES := \
+    libhidltransport \
+    libhidlbase \
+    libhwbinder_noltopgo \
+    libvndksupport \
+    libbatterymonitor
+
+LOCAL_STATIC_LIBRARIES += \
+    libminui \
+    libpng \
+    libbase \
+    libutils \
+    libcutils \
+    liblog \
+    libz \
+    libcrecovery
+
+LOCAL_WHOLE_STATIC_LIBRARIES += \
+    libawk_main
+
+LOCAL_STATIC_LIBRARIES += \
+    libc++_static \
+    libz
+
+LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+
+ifneq ($(TARGET_RECOVERY_DEVICE_MODULES),)
+    LOCAL_REQUIRED_MODULES += $(TARGET_RECOVERY_DEVICE_MODULES)
+endif
+
+include $(BUILD_EXECUTABLE)
+
 # gemian-install-config (static executable)
 # ===============================
 include $(CLEAR_VARS)

@@ -122,13 +122,13 @@ bool matches_locale(const std::string& prefix, const std::string& locale);
 // All these functions load PNG images from "/res/images/${name}.png".
 
 // Load a single display surface from a PNG image.
-int res_create_display_surface(const char* name, GRSurface** pSurface);
+int res_create_display_surface(const std::string& res_path, GRSurface** pSurface);
 
 // Load an array of display surfaces from a single PNG image.  The PNG
 // should have a 'Frames' text chunk whose value is the number of
 // frames this image represents.  The pixel data itself is interlaced
 // by row.
-int res_create_multi_display_surface(const char* name, int* frames, int* fps,
+int res_create_multi_display_surface(const std::string& res_path, int* frames, int* fps,
                                      GRSurface*** pSurface);
 
 // Load a single alpha surface from a grayscale PNG image.
@@ -140,7 +140,7 @@ int res_create_alpha_surface(const std::string &res_path, GRSurface** pSurface);
 // the subimages' size and intended locale in the pixel data.  See
 // bootable/recovery/tools/recovery_l10n for an app that will generate
 // these specialized images from Android resources.
-int res_create_localized_alpha_surface(const char* name, const char* locale,
+int res_create_localized_alpha_surface(const std::string& res_path, const char* locale,
                                        GRSurface** pSurface);
 
 int res_create_scaled_surface(GRSurface** dst, GRSurface* src, float sx, float sy);

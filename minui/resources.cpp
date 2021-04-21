@@ -235,9 +235,8 @@ static void transform_rgb_to_draw(unsigned char* input_row,
     }
 }
 
-int res_create_display_surface(const char* name, GRSurface** pSurface) {
+int res_create_display_surface(const std::string& res_path, GRSurface** pSurface) {
   *pSurface = nullptr;
-  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
   PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
@@ -266,11 +265,10 @@ int res_create_display_surface(const char* name, GRSurface** pSurface) {
   return 0;
 }
 
-int res_create_multi_display_surface(const char* name, int* frames, int* fps,
+int res_create_multi_display_surface(const std::string& res_path, int* frames, int* fps,
                                      GRSurface*** pSurface) {
   *pSurface = nullptr;
   *frames = -1;
-  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
   PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
@@ -407,11 +405,10 @@ bool matches_locale(const std::string& prefix, const std::string& locale) {
   return std::regex_match(locale, loc_regex);
 }
 
-std::vector<std::string> get_locales_in_png(const std::string& png_name) {
-  std::string res_path = android::base::StringPrintf("/res/images/%s.png", png_name.c_str());
+std::vector<std::string> get_locales_in_png(const std::string& res_path) {
   PngHandler png_handler(res_path);
   if (!png_handler) {
-    printf("Failed to open %s, error: %d\n", png_name.c_str(), png_handler.error_code());
+    printf("Failed to open %s, error: %d\n", res_path.c_str(), png_handler.error_code());
     return {};
   }
   if (png_handler.channels() != 1) {
@@ -436,14 +433,13 @@ std::vector<std::string> get_locales_in_png(const std::string& png_name) {
   return result;
 }
 
-int res_create_localized_alpha_surface(const char* name,
+int res_create_localized_alpha_surface(const std::string& res_path,
                                        const char* locale,
                                        GRSurface** pSurface) {
   *pSurface = nullptr;
   if (locale == nullptr) {
     return 0;
   }
-  std::string res_path = android::base::StringPrintf("/res/images/%s.png", name);
   PngHandler png_handler(res_path);
   if (!png_handler) return png_handler.error_code();
 
@@ -464,7 +460,7 @@ int res_create_localized_alpha_surface(const char* name,
     char* loc = reinterpret_cast<char*>(&row[5]);
 
     if (y + 1 + h >= height || matches_locale(loc, locale)) {
-      printf("  %20s: %s (%d x %d @ %d)\n", name, loc, w, h, y);
+      printf("  %20s: %s (%d x %d @ %d)\n", res_path.c_str(), loc, w, h, y);
 
       GRSurface* surface = malloc_surface(w * h);
       if (!surface) {
