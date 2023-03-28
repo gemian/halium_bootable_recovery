@@ -166,6 +166,8 @@ int Device::HandleMenuKey(int key, bool visible) {
 
     case KEY_REFRESH:
       return kRefresh;
+    case SW_LID:
+      return kRefresh;
 
     default:
       // If you have all of the above buttons, any other buttons

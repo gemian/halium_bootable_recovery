@@ -209,6 +209,8 @@ class RecoveryUI {
   virtual bool IsKeyPressed(int key);
   virtual bool IsLongPress();
 
+  void OrientateForKeyboardPresense();
+
   // Returns true if you have the volume up/down and power trio typical of phones and tablets, false
   // otherwise.
   virtual bool HasThreeButtons() const;
@@ -336,6 +338,7 @@ class RecoveryUI {
   void ProcessKey(int key_code, int updown);
   void TimeKey(int key_code, int count);
 
+  bool IsKeyboardOpen();
   bool IsUsbConnected();
 
   bool InitScreensaver();

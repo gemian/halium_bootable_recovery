@@ -70,7 +70,6 @@ cc_defaults {
         "liblog",
         "libprotobuf-cpp-lite",
         "libziparchive",
-        "libvolume_manager",
     ],
 
     static_libs: [
@@ -105,6 +104,7 @@ cc_library_static {
 
     shared_libs: [
         "librecovery_ui",
+        "libvolume_manager",
     ],
 }
 
@@ -165,6 +165,74 @@ cc_binary {
         "simgtest_ubports",
         "system-image-upgrader",
         "tune2fs.recovery",
+    ],
+}
+
+cc_binary {
+    name: "gemian-install-config",
+    recovery: true,
+
+    defaults: [
+        "libinstall_defaults",
+        "librecovery_defaults",
+        "librecovery_utils_defaults",
+    ],
+
+    srcs: [
+        "para_variables.cpp",
+        "gemian_setup.cpp",
+        "gemian_install_config.cpp",
+        "default_device.cpp",
+    ],
+
+    shared_libs: [
+    ],
+
+    static_libs: [
+        "libpng",
+        "librecovery_ui",
+        "libc++fs",
+        "librecovery_ui_default",
+    ],
+
+    required: [
+        "e2fsdroid.recovery",
+        "init_recovery.rc",
+        "librecovery_ui_ext",
+        "minadbd",
+        "mkshrc.recovery",
+        "reboot.recovery",
+        "recovery_deps",
+        "ueventd.rc.recovery",
+
+    ],
+}
+
+cc_binary {
+    name: "yamui",
+
+    defaults: [
+        "recovery_defaults",
+    ],
+
+    srcs: [
+        "yamui.cpp",
+    ],
+
+    shared_libs: [
+    ],
+
+    static_libs: [
+        "libbase",
+        "liblog",
+        "libpng",
+        "libz",
+        "libutils",
+        "librecovery_utils",
+        "libminui",
+    ],
+
+    init_rc: [
     ],
 }
 

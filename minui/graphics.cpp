@@ -346,7 +346,7 @@ void gr_flip() {
   gr_draw = gr_backend->Flip();
 }
 
-int gr_init() {
+int gr_init(GRRotation rot) {
   // pixel_format needs to be set before loading any resources or initializing backends.
   std::string format = android::base::GetProperty("ro.minui.pixel_format", "");
   if (format == "ABGR_8888") {
@@ -402,20 +402,10 @@ int gr_init() {
     return -1;
   }
 
-  std::string rotation_str =
-      android::base::GetProperty("ro.minui.default_rotation", "ROTATION_NONE");
-  if (rotation_str == "ROTATION_RIGHT") {
-    gr_rotate(GRRotation::RIGHT);
-  } else if (rotation_str == "ROTATION_DOWN") {
-    gr_rotate(GRRotation::DOWN);
-  } else if (rotation_str == "ROTATION_LEFT") {
-    gr_rotate(GRRotation::LEFT);
-  } else {  // "ROTATION_NONE" or unknown string
-    gr_rotate(GRRotation::NONE);
-  }
+  gr_rotate(rot);
 
   if (gr_draw->pixel_bytes != 4) {
-    printf("gr_init: Only 4-byte pixel formats supported\n");
+    printf("gr_init: Only 4-byte pixel formats supported (%zu)\n",gr_draw->pixel_bytes);
   }
 
   return 0;
@@ -465,4 +455,8 @@ void gr_fb_blank(bool blank) {
 
 void gr_rotate(GRRotation rot) {
   rotation = rot;
+}
+
+GRRotation gr_rotate_current() {
+  return rotation;
 }

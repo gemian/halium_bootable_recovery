@@ -1027,7 +1027,18 @@ bool ScreenRecoveryUI::LoadWipeDataMenuText() {
 bool ScreenRecoveryUI::Init(const std::string& locale) {
   RecoveryUI::Init(locale);
 
-  if (gr_init() == -1) {
+  GRRotation rot = GRRotation::NONE;
+  std::string rotation_str =
+      android::base::GetProperty("ro.minui.default_rotation", "ROTATION_NONE");
+  if (rotation_str == "ROTATION_RIGHT") {
+    rot = GRRotation::RIGHT;
+  } else if (rotation_str == "ROTATION_DOWN") {
+    rot = GRRotation::DOWN;
+  } else if (rotation_str == "ROTATION_LEFT") {
+    rot = GRRotation::LEFT;
+  }
+
+  if (gr_init(rot) == -1) {
     return false;
   }
 

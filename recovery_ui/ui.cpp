@@ -36,6 +36,7 @@
 #include <android-base/parseint.h>
 #include <android-base/properties.h>
 #include <android-base/strings.h>
+#include <android-base/stringprintf.h>
 #include <volume_manager/VolumeManager.h>
 
 #include "minui/minui.h"
@@ -408,6 +409,22 @@ int RecoveryUI::OnInputEvent(int fd, uint32_t epevents) {
     ProcessKey(ev.code, ev.value);
   }
 
+  if (ev.type == EV_SW) {
+    LOG(DEBUG) << "RecoveryUI::OnInputEvent EV_SW, code: \n" << ev.code;
+    if (ev.code == SW_LID) {
+      if (ev.value == 1) {
+        if (gr_rotate_current() != GRRotation::NONE) {
+          gr_rotate(GRRotation::NONE);
+        }
+      } else {
+        if (gr_rotate_current() == GRRotation::NONE) {
+          gr_rotate(GRRotation::RIGHT);
+        }
+      }
+      EnqueueKey(ev.code);
+    }
+  }
+
   return 0;
 }
 
@@ -454,7 +471,6 @@ void RecoveryUI::ProcessKey(int key_code, int updown) {
 
       case RecoveryUI::REBOOT:
         if (reboot_enabled) {
-          android::volmgr::VolumeManager::Instance()->unmountAll();
           Reboot("userrequested,recovery,ui");
         }
         break;
@@ -591,6 +607,52 @@ void RecoveryUI::InterruptKey() {
     key_interrupted_ = true;
   }
   event_queue_cond.notify_one();
+}
+
+bool RecoveryUI::IsKeyboardOpen() {
+  LOG(INFO) << "IsKeyboardOpen";
+  DIR *dir = opendir("/sys/class/extcon");
+  if (!dir) {
+    LOG(INFO) << "Failed to open extcon directory";
+    return false;
+  }
+
+  struct dirent *de;
+  while ((de = readdir(dir))) {
+    std::string name_file = android::base::StringPrintf("/sys/class/extcon/%s/name", de->d_name);
+    std::string name;
+    if (!android::base::ReadFileToString(name_file, &name)) continue;
+    LOG(INFO) << "name: " << name;
+    if (strncmp(name.c_str(), "hall", 4)) continue;
+    std::string path = android::base::StringPrintf("/sys/class/extcon/%s/state", de->d_name);
+    std::string content;
+    if (!android::base::ReadFileToString(path, &content)) {
+      LOG(INFO) << "Failed to read hall state";
+      closedir(dir);
+      return false;
+    }
+    LOG(INFO) << "content" << content;
+    closedir(dir);
+    return content.find("MECHANICAL=1") != std::string::npos;
+  }
+
+  closedir(dir);
+  return false;
+}
+
+void RecoveryUI::OrientateForKeyboardPresense() {
+  LOG(INFO) << "OrientateForKeyboardPresense";
+  if (IsKeyboardOpen()) {
+    if (gr_rotate_current() == GRRotation::NONE) {
+      LOG(INFO) << "Rotate Right";
+      gr_rotate(GRRotation::RIGHT);
+    }
+  } else {
+    if (gr_rotate_current() != GRRotation::NONE) {
+      LOG(INFO) << "Rotate None";
+      gr_rotate(GRRotation::NONE);
+    }
+  }
 }
 
 bool RecoveryUI::IsUsbConnected() {
